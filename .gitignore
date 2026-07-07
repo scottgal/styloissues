@@ -1,0 +1,27 @@
+## .NET
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+.vs/
+.vscode/
+.idea/
+*.DotSettings.user
+
+## Build / test output
+[Tt]est[Rr]esults/
+*.trx
+*.coverage
+coverage/
+*.binlog
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Secrets (never commit)
+*.pem
+appsettings.*.Local.json
+.env

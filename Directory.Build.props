@@ -7,4 +7,36 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
   </PropertyGroup>
+
+  <!-- Shared NuGet package metadata. Applies to the packable src/* projects;
+       harmless on the sample + test projects, which are never packed. -->
+  <PropertyGroup>
+    <Authors>Scott Galloway</Authors>
+    <Company>mostlylucid</Company>
+    <Product>StyloIssues</Product>
+    <Copyright>Copyright (c) Scott Galloway</Copyright>
+    <Description>GitHub-issues-backed feedback UX for ASP.NET Core: SSR + HTMX + Alpine, zero-PII, GitHub as the source of truth.</Description>
+    <PackageProjectUrl>https://github.com/scottgal/styloissues</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/scottgal/styloissues</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>github-issues;feedback;bug-report;aspnetcore;htmx;alpine;razor</PackageTags>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <!-- TODO: pick a license before publishing (README says TBD), e.g.
+         <PackageLicenseExpression>MIT</PackageLicenseExpression> -->
+    <!-- Versioning: MinVer derives the version from git tags with the 'v' prefix (e.g. v1.2.3). -->
+    <MinVerTagPrefix>v</MinVerTagPrefix>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)icon.png" Pack="true" PackagePath="" Link="icon.png" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="" Link="README.md" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MinVer" Version="7.0.0" PrivateAssets="all" />
+  </ItemGroup>
 </Project>

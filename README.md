@@ -1,5 +1,9 @@
 # StyloIssues
 
+[![CI](https://github.com/scottgal/styloissues/actions/workflows/ci.yml/badge.svg)](https://github.com/scottgal/styloissues/actions/workflows/ci.yml)
+![version](https://img.shields.io/badge/version-0.0.0-blue)
+[![NuGet](https://img.shields.io/nuget/v/StyloIssues.svg)](https://www.nuget.org/packages/StyloIssues)
+
 A GitHub-issues-backed feedback UX for ASP.NET Core. Users file bug reports and
 feature requests through a first-class UI on your site; those flow two-way to
 and from GitHub issues on your repo. GitHub stays the source of truth and gets

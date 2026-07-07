@@ -13,11 +13,11 @@ GitHub is the source of truth, so the default build needs no database.
 
 ## Layout
 
-- `src/StyloIssues.Abstractions` — interfaces, DTOs, options, reporter marker.
-- `src/StyloIssues` — Octokit GitHub-App gateway, sync, DI wiring.
-- `src/StyloIssues.Ui` — Razor Class Library: SSR + HTMX + Alpine feedback UI.
-- `samples/StyloIssues.Sample` — zero-infra sample host.
-- `docs/` — design spec and implementation plan.
+- `src/StyloIssues.Abstractions`: interfaces, DTOs, options, reporter marker.
+- `src/StyloIssues`: Octokit GitHub-App gateway, sync, DI wiring.
+- `src/StyloIssues.UI`: Razor Class Library: SSR + HTMX + Alpine feedback UI.
+- `samples/StyloIssues.Sample`: zero-infra sample host.
+- `docs/`: design spec and implementation plan.
 
 ## Status
 

@@ -20,7 +20,7 @@ The work splits into three layers across repos:
    framework-agnostic "GitHub issues as a feature in your ASP.NET site"
    library. SSR + HTMX + Alpine UX, two-way GitHub sync, pluggable identity
    and a pluggable form-policy hook. No StyloBot coupling.
-2. **StyloBot verdict bridge** (`Mostlylucid.BotDetection.StyloIssues`, in the
+2. **StyloBot verdict bridge** (`Mostlylucid.BotDetection.StyloIssues` in the
    FOSS `stylobot` repo): a small package that implements StyloIssues'
    form-policy hook from the live detection verdict, so the form dogfoods
    StyloBot. StyloBot *core* takes no dependency on StyloIssues.
@@ -77,26 +77,26 @@ stylobot-commercial (website)
 
 Dependency direction stays clean: StyloBot core has no knowledge of
 StyloIssues; the bridge depends on `StyloIssues.Abstractions` (small surface)
-and StyloBot's public verdict API; the site depends on both.
+and StyloBot's public verdict API (the site depends on both).
 
 ## 4. StyloIssues package (reusable core)
 
 ### 4.1 Abstractions
 
-- `ICurrentUser` — host supplies it. Exposes a stable opaque user id (the
+- `ICurrentUser`: host supplies it. Exposes a stable opaque user id (the
   reporter identity), a display name, and an optional linked GitHub login.
   The site implementation projects these from the Keycloak principal.
-- `IIssueGateway` — the GitHub side. Create issue, add comment, get issue,
+- `IIssueGateway`: the GitHub side. Create issue, add comment, get issue,
   list issues (by reporter marker or label/state filter), open/close. Backed
   by Octokit with GitHub-App installation-token auth.
-- `IFeedbackFormPolicy` — the extension point the bridge implements. Given the
+- `IFeedbackFormPolicy`: the extension point the bridge implements. Given the
   current request/user context, returns a `FeedbackFormState` (see 6). Default
   implementation in the package returns `Full` (no adaptation) so the package
   works standalone.
-- `IIssueStore` — **optional** local read-model. Default binding is a no-op /
+- `IIssueStore`: **optional** local read-model. Default binding is a no-op /
   GitHub-backed pass-through; hosts that want speed or rich queries bind a real
   store (the site uses Postgres). Never required to adopt the package.
-- `IIssueAttachmentSource` — **optional** attachment hook (see section 15).
+- `IIssueAttachmentSource`: **optional** attachment hook (see section 15).
   Default binding returns null (no attachment). A host binds a StyloDump-backed
   implementation so an opt-in "attach my detection snapshot" captures a
   diagnostic archive and links it into the issue. StyloIssues stays unaware of
@@ -115,7 +115,7 @@ and StyloBot's public verdict API; the site depends on both.
   create/comment/list plus App-token exchange is enough surface that the typed
   client earns its dependency (unlike the single anonymous GET in
   `GitHubReleasesService`).
-- All writes authored by the App identity, with an attribution footer:
+- All writes authored by the App identity with an attribution footer:
   `Filed via stylo.bot on behalf of {display name}` and, when linked,
   `(@{github_login})` so GitHub notifies the user.
 - A hidden reporter marker is embedded in the issue body (see 7.3) so
@@ -123,11 +123,11 @@ and StyloBot's public verdict API; the site depends on both.
 
 ### 4.3 Store model: GitHub as source of truth
 
-- **Default (zero-infra):** no database. Reads render from the GitHub API
+- **Default (zero-infra)**: no database. Reads render from the GitHub API
   behind a short TTL in-memory cache (pattern mirrors `GitHubReleasesService`,
   ~1-5 min). "My issues" = GitHub search for the reporter marker. Adopting the
   package requires only a GitHub App, no schema, no migrations.
-- **Optional read-model (`IIssueStore`):** the site binds a Postgres store for
+- **Optional read-model (`IIssueStore`)**: the site binds a Postgres store for
   faster lists and richer filtering. This is a cache/read-model, not an
   authority: the reconciler (4.4) rewrites it from GitHub on a cadence, so it
   never diverges. Per the commercial one-database rule, when Postgres is wired
@@ -135,13 +135,13 @@ and StyloBot's public verdict API; the site depends on both.
 
 ### 4.4 Two-way sync
 
-- **Outbound:** site action -> `IIssueGateway` -> GitHub (create issue,
+- **Outbound**: site action -> `IIssueGateway` -> GitHub (create issue,
   comment, open/close). Immediate.
-- **Inbound (fast path):** a GitHub App webhook endpoint (`issues`,
+- **Inbound (fast path)**: a GitHub App webhook endpoint (`issues`,
   `issue_comment`) verified by HMAC `X-Hub-Signature-256`. On a valid event it
   invalidates the relevant cache entry (default mode) or upserts the read-model
   (store mode).
-- **Inbound (backstop):** a periodic reconciler re-queries GitHub for canonical
+- **Inbound (backstop)**: a periodic reconciler re-queries GitHub for canonical
   state on a cadence and refreshes cache/store. This catches missed or delayed
   webhooks. Compute-from-source, never assume the webhook was reliable.
 
@@ -149,13 +149,13 @@ and StyloBot's public verdict API; the site depends on both.
 
 - Razor views/partials shipped in the package (Razor Class Library) so the host
   maps them with one call. Endpoints:
-  - `GET /feedback` — list (my issues, plus a public list if enabled).
-  - `GET /feedback/new` — the file-a-report form (auth-gated by the host).
-  - `POST /feedback/new` — create; re-checks the form policy server-side.
-  - `GET /feedback/{ref}` — detail: threaded comments, status badge,
+  - `GET /feedback`: list (my issues, plus a public list if enabled).
+  - `GET /feedback/new`: the file-a-report form (auth-gated by the host).
+  - `POST /feedback/new`: create; re-checks the form policy server-side.
+  - `GET /feedback/{ref}`: detail with threaded comments, status badge,
     "view on GitHub", link-GitHub CTA when unlinked.
-  - `POST /feedback/{ref}/comment` — add a comment.
-  - `POST /feedback/webhook` — GitHub App webhook sink (HMAC-verified).
+  - `POST /feedback/{ref}/comment`: add a comment.
+  - `POST /feedback/webhook`: GitHub App webhook sink (HMAC-verified).
 - See 8 for the SPA-degrades-well behaviour.
 
 ### 4.6 DI surface
@@ -164,7 +164,7 @@ and StyloBot's public verdict API; the site depends on both.
   (webhook handler + hosted reconciler), and the default form policy.
 - `app.MapStyloIssues()` maps the endpoints and the RCL UI.
 - Hosts override `ICurrentUser`, `IFeedbackFormPolicy`, and optionally
-  `IIssueStore` via normal DI replacement.
+  `IIssueStore` via normal DI replacement (single call each).
 
 ## 5. StyloBot verdict bridge (FOSS `stylobot` repo)
 
@@ -173,8 +173,8 @@ implement `IFeedbackFormPolicy` by reading the live StyloBot verdict from
 `HttpContext` (`IsBot()`, `GetBotConfidence()`, `GetBotType()`, bot probability,
 threat score) and mapping it to a `FeedbackFormState` + `FeedbackVerdictView`.
 
-- References only `StyloIssues.Abstractions` and StyloBot's public verdict API.
-  StyloBot core stays unaware of StyloIssues.
+- References only `StyloIssues.Abstractions` and StyloBot's public verdict API
+  (StyloBot core stays unaware of StyloIssues).
 - Lives in FOSS because it showcases detection; any StyloBot user who also uses
   StyloIssues gets the dogfooding form for free by adding this one package.
 - `services.AddStyloBotFeedbackBridge()` replaces the default form policy.
@@ -193,15 +193,15 @@ boolean) plus `threat_score`.
 
 **Design rules**
 
-- **Server enforcement is the real gate.** The `POST /feedback/new` action
+- **Server enforcement is the real gate**: The `POST /feedback/new` action
   re-evaluates the form policy server-side and refuses above the floor. Hiding
   the submit button is presentation only; it never stands alone (a bot ignores
   hidden DOM and posts anyway). This is layered security, not a redundant
   second copy of one mechanism.
-- **A misclassified human is never locked out.** The Suspicious/Bot paths
+- **A misclassified human is never locked out**: The Suspicious/Bot paths
   always offer the PoW challenge-to-unlock and the "file directly on GitHub"
   link, so a false positive on a *feedback* form is never a dead end.
-- **Transparency over honeypot.** Bots get the honest verdict, not a fake
+- **Transparency over honeypot**: Bots get the honest verdict, not a fake
   success trap. The holodeck stays for real attack paths; this public form is a
   showcase, so deceiving a possibly-misclassified user would be wrong.
 
@@ -209,7 +209,7 @@ boolean) plus `threat_score`.
 
 ### 7.1 Login
 
-- Email-primary Keycloak login is required to file or comment. Anonymous
+- Email-primary Keycloak login is required to file or comment; anonymous
   visitors can view the public list (if enabled) and are challenged on write.
 - The site supplies `ICurrentUser` from the Keycloak principal (`sub`, display
   name, and linked GitHub login claim when present).
@@ -217,9 +217,9 @@ boolean) plus `threat_score`.
 ### 7.2 Optional GitHub linking
 
 - GitHub is registered in the realm as a **profile-level link only**
-  (link-existing-only first-broker-login flow), NOT a "Sign in with GitHub"
+  (link-existing-only first-broker-login flow), not a "Sign in with GitHub"
   button on the login page. Linking is opt-in, per-feature, revocable.
-- Scope is `read:user` only. Not `user:email` (the App @mention already
+- Scope is `read:user` only (not `user:email`, since the App @mention already
   notifies the linked user, so email is redundant scope we would have to
   defend). The user never grants `repo`; the App does all posting.
 - Standing up linking requires a real GitHub OAuth app for the Keycloak broker,
@@ -228,25 +228,25 @@ boolean) plus `threat_score`.
 
 ### 7.3 Reporter marker (zero-PII attribution)
 
-- The reporter identity stored in / searched from GitHub is an opaque
+- The reporter identity stored in/searched from GitHub is an opaque
   `HMAC-SHA256(marker_key, keycloak_sub)`, embedded as a hidden marker in the
   issue body. This lets "my issues" resolve via GitHub search with no local
   PII and no database. Consistent with the existing `Member` HMAC pattern and
   the zero-PII architecture.
 - Only the public GitHub handle (when linked) and this opaque marker are
-  persisted anywhere. No email, no tokens on our side.
+  persisted anywhere (no email, no tokens on our side).
 
 ## 8. UI: a nice SPA that degrades well
 
-- **SPA feel via HTMX boosting.** `hx-boost` + `hx-push-url` give client-side
-  navigation, partial swaps (submit -> new issue row, load comments inline,
+- **SPA feel via HTMX boosting**: `hx-boost` + `hx-push-url` give client-side
+  navigation, partial swaps (submit → new issue row, load comments inline,
   refresh issue state), and history without full reloads. Alpine holds the
   local reactive model (field state, character counts, optimistic disable, the
   verdict-band reveal).
-- **Degrades well on two axes**, both collapsing onto the same SSR baseline:
-  - *Capability:* JS off -> plain server-rendered forms and links that still
+- **Degrades well on two axes** (both collapsing onto the same SSR baseline):
+  - *Capability*: JS off → plain server-rendered forms and links that still
     file and comment via normal POSTs. No dead buttons.
-  - *Verdict:* bot band -> the stripped bare view (which is also what a
+  - *Verdict*: bot band → the stripped bare view (which is also what a
     no-JS/low-capability client tends to get), so the degradation path and the
     dogfood path reuse one code path.
 - **Vendored assets, no CDN** (HTMX + Alpine bundled), matching the dashboard's
@@ -254,27 +254,27 @@ boolean) plus `threat_score`.
 
 ## 9. Data flows
 
-- **File an issue:** authed user submits `POST /feedback/new` -> server
-  re-checks form policy -> `IIssueGateway.CreateIssue` (App token, attribution
-  footer, hidden reporter marker, category->label) -> HTMX swaps the new row /
+- **File an issue**: authed user submits `POST /feedback/new` → server
+  re-checks form policy → `IIssueGateway.CreateIssue` (App token, attribution
+  footer, hidden reporter marker, category→label) → HTMX swaps the new row or
   redirects to detail. No-JS: normal POST-redirect-get.
-- **Comment:** `POST /feedback/{ref}/comment` -> `IIssueGateway.AddComment`
-  (App, on-behalf footer) -> HTMX appends the comment partial.
-- **Inbound update:** GitHub -> `POST /feedback/webhook` (HMAC-verified) ->
-  cache invalidate / store upsert -> next render reflects it.
-- **Reconcile:** hosted service pulls issues updated since a cursor -> refresh
+- **Comment**: `POST /feedback/{ref}/comment` → `IIssueGateway.AddComment`
+  (App, on-behalf footer) → HTMX appends the comment partial.
+- **Inbound update**: GitHub → `POST /feedback/webhook` (HMAC-verified) →
+  cache invalidate/store upsert → next render reflects it.
+- **Reconcile**: hosted service pulls issues updated since a cursor → refresh
   cache/store.
-- **Render form:** `IFeedbackFormPolicy` (bridge) reads verdict -> chooses band
-  -> view renders full / challenge-gated / bare-with-verdict.
+- **Render form**: `IFeedbackFormPolicy` (bridge) reads verdict → chooses band
+  → view renders full/challenge-gated/bare-with-verdict.
 
 ## 10. Security
 
-- Webhook HMAC verification (`X-Hub-Signature-256`) with a secret from env /
+- Webhook HMAC verification (`X-Hub-Signature-256`) with a secret from env or
   secret store; reject unsigned or mismatched payloads.
 - All GitHub secrets (App private key, webhook secret, OAuth client secret,
-  reporter-marker HMAC key) come from env / secret store, never config-file
+  reporter-marker HMAC key) come from env or secret store, never config-file
   defaults.
-- Server-side form-policy enforcement on every write (6).
+- Server-side form-policy enforcement on every write (section 6).
 - Body sanitisation on outbound issue/comment content; strip PII query params
   from any attached diagnostics; the "attach my detection snapshot" option is
   explicit opt-in.
@@ -282,12 +282,12 @@ boolean) plus `threat_score`.
 
 ## 11. Testing
 
-- **StyloIssues:** gateway against a recorded GitHub API / a fake
+- **StyloIssues**: gateway against a recorded GitHub API or a fake
   `IIssueGateway`; webhook HMAC verification (valid/invalid/replay); reconciler
   refresh; form-policy default; reporter-marker round-trip; no-JS POST paths.
-- **Bridge:** verdict -> band mapping across Human/Suspicious/Bot/Internal;
+- **Bridge**: verdict → band mapping across Human/Suspicious/Bot/Internal;
   server-side refusal above floor; PoW unlock path; false-positive escape hatch.
-- **Site:** Keycloak `ICurrentUser` projection; GitHub link claim surfacing;
+- **Site**: Keycloak `ICurrentUser` projection; GitHub link claim surfacing;
   Postgres `IIssueStore` upsert/read; end-to-end file-and-see-on-GitHub (staged
   against a scratch repo).
 
@@ -304,17 +304,17 @@ boolean) plus `threat_score`.
 
 ## 13. Open questions and follow-ups
 
-- **foss dogfood seam (pending):** confirm the exact seam for reading the
+- **foss dogfood seam (pending)**: confirm the exact seam for reading the
   verdict on an authenticated POST (off `HttpContext` vs a dedicated call),
   transport `protocol_class` for a document POST, and PoW/challenge interplay.
   Asked on the agent channel (`foss-styloissues-dogfood-and-placement`); fold
   the answer in. Non-blocking; the bridge reads `HttpContext` by default.
-- **overview spec review (offered):** send `feature-styloissues-spec-review`
+- **overview spec review (offered)**: send `feature-styloissues-spec-review`
   for a pass on the concrete `IIssueStore` shape and webhook secret rotation.
-- **Realm GitHub-IdP hardening:** its own commit (link-existing-only, real
+- **Realm GitHub-IdP hardening**: its own commit (link-existing-only, real
   OAuth app), separate from the StyloIssues drop.
 
-## 14. Out of scope / future
+## 14. Out of scope/future
 
 - Reactions, assignees, milestones editing from the site (view-only for now).
 - Discussions (vs issues) backing.
@@ -324,7 +324,7 @@ boolean) plus `threat_score`.
   (section 15) are stubbed here: interfaces defined, implementations deferred.
 - **Debug agents** consuming the StyloDump archive to triage issues. This is
   why the archive manifest is structured and schema-versioned from the start,
-  even though collection is stubbed. Not built now.
+  even though collection is stubbed (not built now).
 
 ## 15. Corollary package: StyloDump (diagnostic archive) [stubbed]
 
@@ -335,21 +335,21 @@ package itself knows nothing about StyloBot.
 
 ### 15.1 Abstractions
 
-- `DumpScope(string? Fingerprint, string? Endpoint, DateTimeOffset From, DateTimeOffset To)`
-  — what to dump and for when. Any field may be null (dump-everything-for-window).
-- `IDiagnosticContributor` — the per-app hook. `string Name { get; }` and
+- `DumpScope(string? Fingerprint, string? Endpoint, DateTimeOffset From, DateTimeOffset To)`:
+  what to dump and for when. Any field may be null (dump-everything-for-window).
+- `IDiagnosticContributor`: the per-app hook. `string Name { get; }` and
   `Task ContributeAsync(DumpScope scope, IDumpArchive archive, CancellationToken)`.
   A host registers as many as it likes; each writes named entries into the archive.
-- `IDumpArchive` — write surface for a contributor: `Stream CreateEntry(string path)`
+- `IDumpArchive`: write surface for a contributor. `Stream CreateEntry(string path)`
   plus `AddManifestEntry(string contributor, string path, object metadata)`.
-- `IDumpService` — `Task<DumpResult> CreateDumpAsync(DumpScope scope, CancellationToken)`.
+- `IDumpService`: `Task<DumpResult> CreateDumpAsync(DumpScope scope, CancellationToken)`.
   Fans out to all registered contributors, assembles a zip, writes
   `manifest.json` at the root, returns the stream plus a summary.
 - `DumpResult(Stream Archive, string ContentType, DumpManifest Manifest)`.
 
 ### 15.2 Manifest (agent-consumable)
 
-`manifest.json` at the archive root: schema version, the `DumpScope`, produced-at
+`manifest.json` at the archive root contains: schema version, the `DumpScope`, produced-at
 timestamp, and an index of `{ contributor, path, metadata }` entries. Structured
 and versioned so a future debug agent can parse and reason over the archive
 without unzipping blindly. This is the load-bearing forward-compatibility
@@ -361,8 +361,8 @@ decision; the collection internals behind it are stubbed.
 dumps detection signals for the scoped fingerprint/endpoint/window by tapping
 the ephemeral signal system's existing sink hooks (session vectors, signature
 reputation, recent contributions). This lets a self-hosted StyloBot instance
-emit an archive. StyloBot core is unaware of StyloDump; only this bridge depends
-on `StyloDump`. Stubbed: interface + registration now, signal-tap fill-in later.
+emit an archive (StyloBot core is unaware of StyloDump; only this bridge depends
+on it). Stubbed: interface + registration now, signal-tap fill-in later.
 
 ### 15.4 StyloIssues consumption
 
@@ -371,16 +371,15 @@ StyloDump-backed implementation. On an opt-in "attach my detection snapshot"
 issue submission, StyloIssues calls the source with a `DumpScope` for the
 current fingerprint and recent window, receives an `IssueAttachment`
 (filename + bytes-or-hosted-URL + a short manifest summary), links it into the
-issue, and drops the manifest summary inline in a collapsed `<details>` block so
-it is readable (by humans and future agents) without downloading. The upload/
-hosting mechanism (App-created gist vs pre-hosted object-store URL) is stubbed;
-the seam is defined so the mechanism can be chosen later without touching
-StyloIssues' core.
+issue, and drops the manifest summary inline in a collapsed `<details>` block
+(readable by humans and future agents without downloading). The upload/hosting
+mechanism (App-created gist vs pre-hosted object-store URL) is stubbed; the seam
+is defined so the mechanism can be chosen later without touching StyloIssues' core.
 
 ### 15.5 Boundaries
 
 - StyloDump is generic: no StyloBot, no GitHub, no StyloIssues dependency.
 - StyloIssues depends only on the `IIssueAttachmentSource` interface, not on
-  StyloDump. A host without StyloDump simply gets no attachment.
-- The FOSS StyloBot contributor depends on `StyloDump` + StyloBot core; core
-  depends on neither.
+  StyloDump (a host without StyloDump simply gets no attachment).
+- The FOSS StyloBot contributor depends on `StyloDump` + StyloBot core (core
+  depends on neither).

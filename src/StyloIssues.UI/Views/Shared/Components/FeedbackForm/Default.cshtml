@@ -1,5 +1,7 @@
 @using StyloIssues.Abstractions
 @using StyloIssues.UI.Models
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Af
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor Hca
 @model FeedbackFormViewModel
 @{
     Layout = null;
@@ -28,12 +30,15 @@ else if (Model.State == FeedbackFormState.ChallengeGated)
 }
 else
 {
+    var tok = Af.GetAndStoreTokens(Hca.HttpContext!).RequestToken;
     <form method="post" action="/feedback/new"
           hx-post="/feedback/new"
           hx-target="this"
           hx-swap="outerHTML"
+          hx-headers='{"RequestVerificationToken": "@tok"}'
           x-data="{ submitting: false }"
           x-on:submit="submitting = true">
+        @Html.AntiForgeryToken()
         <div class="sb-field">
             <label for="sb-title">Title</label>
             <input id="sb-title" name="title" type="text" required maxlength="200" placeholder="Brief summary" />

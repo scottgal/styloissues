@@ -22,6 +22,10 @@ public static class StyloIssuesUiServiceExtensions
         services.TryAddSingleton(TimeProvider.System);
         services.TryAddSingleton<IIssueAttachmentSource, StyloIssues.NullIssueAttachmentSource>();
 
+        // Register antiforgery: form POST endpoints validate the token in-handler.
+        // HeaderName matches the hx-headers attribute used by the HTMX path in the ViewComponent views.
+        services.AddAntiforgery(o => o.HeaderName = "RequestVerificationToken");
+
         return services;
     }
 }

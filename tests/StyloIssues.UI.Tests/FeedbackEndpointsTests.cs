@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using StyloIssues.Abstractions;
 using StyloIssues.UI;
@@ -28,6 +29,12 @@ file sealed class BareStubPolicy : IFeedbackFormPolicy
 {
     public FeedbackVerdictView Evaluate(HttpContext context, ICurrentUser user)
         => new(FeedbackFormState.Bare, "TestBot", "Crawler", 0.95, "high", "policy-test");
+}
+
+file sealed class FullStubPolicy : IFeedbackFormPolicy
+{
+    public FeedbackVerdictView Evaluate(HttpContext context, ICurrentUser user)
+        => new(FeedbackFormState.Full, null, null, 0.1, "low", null);
 }
 
 file sealed class StubIssueGateway : IIssueGateway
@@ -150,5 +157,37 @@ public sealed class FeedbackEndpointsTests : IClassFixture<TestFactory>
         var response = await _client.PostAsync("/feedback/new", form);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+}
+
+public sealed class AntiforgeryTests : IClassFixture<TestFactory>
+{
+    private readonly TestFactory _factory;
+
+    public AntiforgeryTests(TestFactory factory) => _factory = factory;
+
+    [Fact]
+    public async Task Post_new_without_antiforgery_token_returns_400_when_authenticated_full_policy()
+    {
+        // Override the Bare policy with Full so the handler reaches the antiforgery check.
+        // Auth passes (AuthenticatedStubUser), Bare gate passes (FullStubPolicy), then
+        // antiforgery validation fails (no token in request) and the handler returns 400.
+        using var client = _factory.WithWebHostBuilder(b =>
+            b.ConfigureTestServices(services =>
+            {
+                services.RemoveAll<IFeedbackFormPolicy>();
+                services.AddSingleton<IFeedbackFormPolicy, FullStubPolicy>();
+            })).CreateClient();
+
+        var form = new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["title"]    = "test title",
+            ["body"]     = "test body",
+            ["category"] = "bug",
+        });
+
+        var response = await client.PostAsync("/feedback/new", form);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

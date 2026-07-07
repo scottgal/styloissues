@@ -25,8 +25,7 @@
     <PackageTags>github-issues;feedback;bug-report;aspnetcore;htmx;alpine;razor</PackageTags>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <!-- TODO: pick a license before publishing (README says TBD), e.g.
-         <PackageLicenseExpression>MIT</PackageLicenseExpression> -->
+    <PackageLicenseExpression>Unlicense</PackageLicenseExpression>
     <!-- Versioning: MinVer derives the version from git tags with the 'v' prefix (e.g. v1.2.3). -->
     <MinVerTagPrefix>v</MinVerTagPrefix>
   </PropertyGroup>

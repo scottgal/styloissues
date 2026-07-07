@@ -1,11 +1,8 @@
 using System.Net;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Hosting;
 using StyloIssues.Abstractions;
 
 namespace StyloIssues.UI.Tests;
@@ -45,69 +42,23 @@ file sealed class ListStubIssueReader : IIssueReader
 }
 
 // ---------------------------------------------------------------------------
-// Factory: minimal host stub; GET /feedback not yet mapped (RED state)
+// Factory: boots the sample's real Program so GET /feedback renders through
+// the actual <sb-feedback-list> TagHelper -> FeedbackListViewComponent ->
+// FeedbackList/Default.cshtml chain. IIssueReader and ICurrentUser are
+// overridden with stubs so no GitHub API call is made.
 // ---------------------------------------------------------------------------
 
-public sealed class ListTestFactory : WebApplicationFactory<TestStartup>
+public sealed class ListTestFactory : WebApplicationFactory<Program>
 {
-    protected override IHostBuilder? CreateHostBuilder() =>
-        Host.CreateDefaultBuilder();
-
-    protected override IHost CreateHost(IHostBuilder builder)
-    {
-        builder.ConfigureWebHost(web =>
-        {
-            web.UseContentRoot(AppContext.BaseDirectory);
-            web.UseTestServer();
-        });
-
-        var host = builder.Build();
-        host.Start();
-        return host;
-    }
-
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
-        builder.ConfigureServices(services =>
+        builder.ConfigureTestServices(services =>
         {
-            services.AddRouting();
-            services.Configure<StyloIssuesOptions>(o =>
-            {
-                o.MarkerKey = "test-marker-key";
-                o.RepoOwner = "demo";
-                o.RepoName = "demo";
-                o.EnablePublicList = true;
-            });
-            services.AddSingleton<ICurrentUser, ListStubUser>();
             services.AddSingleton<IIssueReader, ListStubIssueReader>();
-        });
-        builder.Configure(app =>
-        {
-            app.UseRouting();
-            app.UseEndpoints(ep =>
-            {
-                ep.MapGet("/feedback", async ctx =>
-                {
-                    var reader = ctx.RequestServices.GetRequiredService<IIssueReader>();
-                    var issues = await reader.ListPublicAsync(CancellationToken.None);
-
-                    var sb = new System.Text.StringBuilder(
-                        "<!doctype html><html lang=\"en\"><body><ul class=\"sb-issue-list\">");
-                    foreach (var issue in issues)
-                    {
-                        sb.Append("<li><a href=\"/feedback/");
-                        sb.Append(issue.Number);
-                        sb.Append("\">");
-                        sb.Append(System.Net.WebUtility.HtmlEncode(issue.Title));
-                        sb.Append("</a></li>");
-                    }
-                    sb.Append("</ul></body></html>");
-
-                    ctx.Response.ContentType = "text/html; charset=utf-8";
-                    await ctx.Response.WriteAsync(sb.ToString());
-                });
-            });
+            services.AddSingleton<ICurrentUser, ListStubUser>();
+            // Ensure MarkerKey is non-empty so ReporterMarker.Compute does not throw.
+            services.Configure<StyloIssuesOptions>(o => o.MarkerKey = "test-marker-key");
         });
     }
 }
@@ -123,13 +74,16 @@ public sealed class ListRendersTests : IClassFixture<ListTestFactory>
     public ListRendersTests(ListTestFactory factory) => _client = factory.CreateClient();
 
     [Fact]
-    public async Task Get_feedback_returns_ok_and_html()
+    public async Task Get_feedback_renders_through_tag_helper_and_view_component()
     {
         var resp = await _client.GetAsync("/feedback");
 
         Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
         Assert.Contains("text/html", resp.Content.Headers.ContentType!.ToString());
         var body = await resp.Content.ReadAsStringAsync();
+        // Stub data flows through IIssueReader -> FeedbackListViewComponent -> Default.cshtml:
         Assert.Contains("Demo Bug Report", body);
+        // Stable marker from FeedbackList/Default.cshtml: <ul class="sb-issue-list">
+        Assert.Contains("sb-issue-list", body);
     }
 }

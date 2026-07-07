@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/StyloIssues.UI/StyloIssues.UI.csproj" />
+    <ProjectReference Include="../../samples/StyloIssues.Sample/StyloIssues.Sample.csproj" />
   </ItemGroup>
 
   <ItemGroup>

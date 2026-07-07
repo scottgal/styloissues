@@ -8,8 +8,15 @@ public sealed partial class OctokitIssueGateway : IIssueGateway
     public async Task<IssueDetail?> GetIssueAsync(int number, CancellationToken ct)
     {
         var client = await ClientAsync(ct);
-        var issue = await client.Issue.Get(_o.RepoOwner, _o.RepoName, number);
-        if (issue is null) return null;
+        Octokit.Issue issue;
+        try
+        {
+            issue = await client.Issue.Get(_o.RepoOwner, _o.RepoName, number);
+        }
+        catch (NotFoundException)
+        {
+            return null;
+        }
         var raw = await client.Issue.Comment.GetAllForIssue(_o.RepoOwner, _o.RepoName, number);
         var comments = raw.Select(c => new Abstractions.IssueComment(
             c.User.Login, c.Body, c.CreatedAt, c.User.Type == AccountType.Bot)).ToList();

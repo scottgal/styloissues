@@ -18,10 +18,13 @@ public static class StyloIssuesServiceCollectionExtensions
         services.Configure(configure);
         services.TryAddSingleton(TimeProvider.System);
 
-        services.AddSingleton<IGitHubAppTokenProvider>(sp => new GitHubAppTokenProvider(
-            sp.GetRequiredService<IOptions<StyloIssuesOptions>>(),
-            sp.GetRequiredService<TimeProvider>(),
-            GitHubAppAuth.FetchInstallationToken));
+        services.AddSingleton<IGitHubAppTokenProvider>(sp =>
+        {
+            var opts = sp.GetRequiredService<IOptions<StyloIssuesOptions>>();
+            if (!string.IsNullOrWhiteSpace(opts.Value.PersonalAccessToken))
+                return new PatTokenProvider(opts);
+            return new GitHubAppTokenProvider(opts, sp.GetRequiredService<TimeProvider>(), GitHubAppAuth.FetchInstallationToken);
+        });
 
         services.AddSingleton<Func<string, IGitHubClient>>(_ => token =>
             new GitHubClient(new ProductHeaderValue("styloissues"))

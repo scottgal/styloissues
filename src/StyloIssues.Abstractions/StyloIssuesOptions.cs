@@ -11,6 +11,12 @@ public sealed class StyloIssuesOptions
     public string PrivateKeyPem { get; set; } = "";   // bound from env/secret store
     public string WebhookSecret { get; set; } = "";   // bound from env/secret store
     public string MarkerKey { get; set; } = "";       // bound from env/secret store
+    /// <summary>
+    /// When set, StyloIssues authenticates to GitHub with this token directly and skips
+    /// the GitHub App JWT/installation-token flow (simple single-repo / self-host auth).
+    /// When empty, the App flow (AppId/InstallationId/PrivateKeyPem) is used.
+    /// </summary>
+    public string PersonalAccessToken { get; set; } = "";
     public TimeSpan CacheTtl { get; set; } = TimeSpan.FromMinutes(2);
     public bool EnablePublicList { get; set; } = true;
     public Dictionary<string, string> CategoryLabels { get; set; } = new();

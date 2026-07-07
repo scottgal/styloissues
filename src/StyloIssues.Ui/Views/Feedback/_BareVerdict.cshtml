@@ -1,0 +1,22 @@
+@model FeedbackVerdictView
+<div class="sb-verdict" role="alert">
+    <p>
+        StyloBot has flagged this request and the feedback form is unavailable.
+        @if (Model.BotName is not null)
+        {
+            <span>Detected as: @Model.BotName</span>
+            @if (Model.BotType is not null)
+            {
+                <span>(@Model.BotType)</span>
+            }
+            <span>with @($"{Model.Probability:P0}") confidence</span>
+            <span>· threat band: @Model.ThreatBand</span>
+        }
+    </p>
+    <p>
+        To report issues directly, please visit
+        <a href="https://github.com/scottgal/stylobot/issues" rel="noopener">
+            github.com/scottgal/stylobot/issues
+        </a>.
+    </p>
+</div>

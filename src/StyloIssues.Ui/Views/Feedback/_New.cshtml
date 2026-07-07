@@ -1,0 +1,28 @@
+@model FeedbackVerdictView
+<form method="post" action="/feedback/new"
+      hx-post="/feedback/new" hx-push-url="true"
+      x-data="{ title: '', body: '' }">
+    <label for="title">Title</label>
+    <input id="title" name="title" x-model="title"
+           required maxlength="120" placeholder="Brief summary" />
+
+    <label for="body">Description</label>
+    <textarea id="body" name="body" x-model="body"
+              required placeholder="Steps to reproduce or feature request details"></textarea>
+
+    <label for="category">Category</label>
+    <select id="category" name="category">
+        <option value="bug">Bug</option>
+        <option value="feature">Feature request</option>
+        <option value="question">Question</option>
+    </select>
+
+    @if (Model.State != FeedbackFormState.Bare)
+    {
+        <button type="submit" :disabled="!title || !body">Send feedback</button>
+    }
+    else
+    {
+        <partial name="_BareVerdict" model="Model" />
+    }
+</form>

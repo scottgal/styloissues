@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../src/StyloIssues.Ui/StyloIssues.Ui.csproj" />
+    <ProjectReference Include="../../src/StyloIssues.UI/StyloIssues.UI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

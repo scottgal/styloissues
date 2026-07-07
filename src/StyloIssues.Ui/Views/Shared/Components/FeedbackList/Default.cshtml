@@ -1,0 +1,27 @@
+@using StyloIssues.Abstractions
+@model IReadOnlyList<IssueSummary>
+@{
+    Layout = null;
+}
+
+@if (Model == null || Model.Count == 0)
+{
+    <div class="sb-empty">
+        <p>No issues found.</p>
+    </div>
+}
+else
+{
+    <ul class="sb-issue-list">
+        @foreach (var issue in Model)
+        {
+            <li class="sb-issue-item sb-issue-@issue.State.ToLower()">
+                <a href="/feedback/@issue.Number" class="sb-issue-title">@issue.Title</a>
+                <span class="sb-issue-meta">
+                    <span class="sb-issue-state">@issue.State</span>
+                    <span class="sb-issue-date">@issue.UpdatedAt.ToString("yyyy-MM-dd")</span>
+                </span>
+            </li>
+        }
+    </ul>
+}

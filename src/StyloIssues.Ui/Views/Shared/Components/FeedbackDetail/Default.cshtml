@@ -1,0 +1,74 @@
+@using StyloIssues.Abstractions
+@model IssueDetail?
+@{
+    Layout = null;
+}
+
+@if (Model is null)
+{
+    <div class="sb-not-found">
+        <p>Issue not found.</p>
+    </div>
+}
+else
+{
+    <article class="sb-issue-detail">
+        <header class="sb-issue-header">
+            <h2>@Model.Title</h2>
+            <div class="sb-issue-meta">
+                <span class="sb-issue-state sb-issue-@Model.State.ToLower()">@Model.State</span>
+                <span class="sb-issue-date">Updated @Model.UpdatedAt.ToString("yyyy-MM-dd")</span>
+                <a href="@Model.HtmlUrl" target="_blank" rel="noopener" class="sb-github-link">View on GitHub</a>
+            </div>
+        </header>
+
+        <div class="sb-issue-body">
+            @foreach (var line in Model.Body.Split('\n'))
+            {
+                @line<br />
+            }
+        </div>
+
+        @if (Model.Comments.Count > 0)
+        {
+            <section class="sb-comments">
+                <h3>Comments</h3>
+                @foreach (var comment in Model.Comments)
+                {
+                    <div class="sb-comment @(comment.FromApp ? "sb-comment-bot" : "")">
+                        <div class="sb-comment-header">
+                            <span class="sb-comment-author">@comment.Author</span>
+                            @if (comment.FromApp)
+                            {
+                                <span class="sb-comment-badge">[bot]</span>
+                            }
+                            <span class="sb-comment-date">@comment.CreatedAt.ToString("yyyy-MM-dd HH:mm")</span>
+                        </div>
+                        <div class="sb-comment-body">
+                            @foreach (var line in comment.Body.Split('\n'))
+                            {
+                                @line<br />
+                            }
+                        </div>
+                    </div>
+                }
+            </section>
+        }
+
+        <section class="sb-add-comment">
+            <h3>Add a comment</h3>
+            <form method="post" action="/feedback/@Model.Number/comment"
+                  hx-post="/feedback/@Model.Number/comment"
+                  hx-target=".sb-comments"
+                  hx-swap="outerHTML">
+                <div class="sb-field">
+                    <label for="sb-comment-body">Comment</label>
+                    <textarea id="sb-comment-body" name="body" rows="4" required maxlength="4000"></textarea>
+                </div>
+                <div class="sb-actions">
+                    <button type="submit">Add comment</button>
+                </div>
+            </form>
+        </section>
+    </article>
+}

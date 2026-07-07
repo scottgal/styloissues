@@ -1,8 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
+    <AssemblyName>StyloIssues.UI</AssemblyName>
+    <RootNamespace>StyloIssues.UI</RootNamespace>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>

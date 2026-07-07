@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using StyloIssues.Abstractions;
-using StyloIssues.Ui;
+using StyloIssues.UI;
 using StyloIssues.Webhook;
 
-namespace StyloIssues.Ui.Tests;
+namespace StyloIssues.UI.Tests;
 
 // ---------------------------------------------------------------------------
 // Stubs

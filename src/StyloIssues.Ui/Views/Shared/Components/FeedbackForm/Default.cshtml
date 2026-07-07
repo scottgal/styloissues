@@ -1,0 +1,59 @@
+@using StyloIssues.Abstractions
+@model FeedbackVerdictView
+@{
+    Layout = null;
+}
+
+@if (Model.State == FeedbackFormState.Bare)
+{
+    <div class="sb-verdict">
+        <p>Automated activity detected. Feedback submission is not available.</p>
+        @if (!string.IsNullOrEmpty(Model.BotName))
+        {
+            <p class="sb-verdict-detail">Detection: @Model.BotName (@Model.BotType) &mdash; threat band: @Model.ThreatBand</p>
+        }
+        <p><a href="#" target="_blank" rel="noopener">View issues on GitHub</a></p>
+    </div>
+}
+else if (Model.State == FeedbackFormState.ChallengeGated)
+{
+    <div class="sb-challenge">
+        <p>Please complete a verification step before submitting feedback.</p>
+        @if (!string.IsNullOrEmpty(Model.Reason))
+        {
+            <p class="sb-challenge-reason">@Model.Reason</p>
+        }
+    </div>
+}
+else
+{
+    <form method="post" action="/feedback/new"
+          hx-post="/feedback/new"
+          hx-target="this"
+          hx-swap="outerHTML"
+          x-data="{ submitting: false }"
+          x-on:submit="submitting = true">
+        <div class="sb-field">
+            <label for="sb-title">Title</label>
+            <input id="sb-title" name="title" type="text" required maxlength="200" placeholder="Brief summary" />
+        </div>
+        <div class="sb-field">
+            <label for="sb-body">Description</label>
+            <textarea id="sb-body" name="body" rows="5" required maxlength="4000" placeholder="Describe the issue or feedback"></textarea>
+        </div>
+        <div class="sb-field">
+            <label for="sb-category">Category</label>
+            <select id="sb-category" name="category">
+                <option value="bug">Bug</option>
+                <option value="feature">Feature request</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+        <div class="sb-actions">
+            <button type="submit" x-bind:disabled="submitting">
+                <span x-show="!submitting">Submit</span>
+                <span x-show="submitting">Submitting...</span>
+            </button>
+        </div>
+    </form>
+}

@@ -15,9 +15,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StyloIssues.Tests", "tests\StyloIssues.Tests\StyloIssues.Tests.csproj", "{DAEB0E16-6942-40E8-8A83-8C7E48D03868}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StyloIssues.Ui", "src\StyloIssues.Ui\StyloIssues.Ui.csproj", "{C1A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StyloIssues.UI", "src\StyloIssues.UI\StyloIssues.UI.csproj", "{C1A2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StyloIssues.Ui.Tests", "tests\StyloIssues.Ui.Tests\StyloIssues.Ui.Tests.csproj", "{E1F2A3B4-C5D6-E7F8-A9B0-C1D2E3F4A5B6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StyloIssues.UI.Tests", "tests\StyloIssues.UI.Tests\StyloIssues.UI.Tests.csproj", "{E1F2A3B4-C5D6-E7F8-A9B0-C1D2E3F4A5B6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -25,3 +25,6 @@ Thumbs.db
 *.pem
 appsettings.*.Local.json
 .env
+
+## SDD scratch (briefs, reports, review packages, ledger)
+.superpowers/

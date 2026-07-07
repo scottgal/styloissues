@@ -1,7 +1,7 @@
 # StyloIssues
 
 [![CI](https://github.com/scottgal/styloissues/actions/workflows/ci.yml/badge.svg)](https://github.com/scottgal/styloissues/actions/workflows/ci.yml)
-![version](https://img.shields.io/badge/version-0.0.0-blue)
+![version](https://img.shields.io/badge/version-0.0.1-blue)
 [![NuGet](https://img.shields.io/nuget/v/StyloIssues.svg)](https://www.nuget.org/packages/StyloIssues)
 ![license](https://img.shields.io/badge/license-Unlicense-blue)
 

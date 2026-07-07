@@ -1,6 +1,7 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using StyloIssues.Abstractions;
+using StyloIssues.UI.Models;
 
 namespace StyloIssues.UI.ViewComponents;
 
@@ -8,23 +9,22 @@ public sealed class FeedbackFormViewComponent : ViewComponent
 {
     private readonly IFeedbackFormPolicy _policy;
     private readonly ICurrentUser _user;
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly StyloIssuesOptions _opts;
 
     public FeedbackFormViewComponent(
         IFeedbackFormPolicy policy,
         ICurrentUser user,
-        IHttpContextAccessor httpContextAccessor)
+        IOptions<StyloIssuesOptions> opts)
     {
         _policy = policy;
         _user = user;
-        _httpContextAccessor = httpContextAccessor;
+        _opts = opts.Value;
     }
 
     public IViewComponentResult Invoke()
     {
-        var ctx = _httpContextAccessor.HttpContext
-            ?? throw new InvalidOperationException("No HttpContext available.");
-        var verdict = _policy.Evaluate(ctx, _user);
-        return View(verdict);
+        var verdict = _policy.Evaluate(HttpContext, _user);
+        var gitHubIssuesUrl = $"https://github.com/{_opts.RepoOwner}/{_opts.RepoName}/issues";
+        return View(new FeedbackFormViewModel(verdict, gitHubIssuesUrl));
     }
 }

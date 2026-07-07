@@ -130,11 +130,11 @@ public sealed class TestFactory : WebApplicationFactory<TestStartup>
 // Tests
 // ---------------------------------------------------------------------------
 
-public sealed class FeedbackControllerTests : IClassFixture<TestFactory>
+public sealed class FeedbackEndpointsTests : IClassFixture<TestFactory>
 {
     private readonly HttpClient _client;
 
-    public FeedbackControllerTests(TestFactory factory)
+    public FeedbackEndpointsTests(TestFactory factory)
         => _client = factory.CreateClient();
 
     [Fact]

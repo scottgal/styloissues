@@ -28,12 +28,16 @@ public static class StyloIssuesEndpoints
         IOptions<StyloIssuesOptions> opts,
         CancellationToken ct)
     {
-        if (!user.IsAuthenticated)
+        if (!user.IsAuthenticated || user.StableId is null)
             return Results.Unauthorized();
 
         // Server-side policy gate: re-evaluate; this is the real enforcement point,
         // not a client-side check.
         var verdict = policy.Evaluate(context, user);
+        // Only FeedbackFormState.Bare (confirmed bot) is hard-blocked here with a 403.
+        // FeedbackFormState.ChallengeGated (suspicious, may be human) is intentionally NOT
+        // blocked by the core package: challenge handling is a host/bridge responsibility
+        // (e.g. redirecting to a CAPTCHA or showing challenge UI before allowing submission).
         if (verdict.State == FeedbackFormState.Bare)
             return Results.StatusCode(StatusCodes.Status403Forbidden);
 
@@ -45,9 +49,7 @@ public static class StyloIssuesEndpoints
         if (string.IsNullOrEmpty(title))
             return Results.BadRequest("title is required");
 
-        var marker = user.StableId is not null
-            ? ReporterMarker.Compute(Encoding.UTF8.GetBytes(opts.Value.MarkerKey), user.StableId)
-            : ReporterMarker.Compute(Encoding.UTF8.GetBytes(opts.Value.MarkerKey), user.DisplayName);
+        var marker = ReporterMarker.Compute(Encoding.UTF8.GetBytes(opts.Value.MarkerKey), user.StableId!);
 
         var reporter = new ReporterContext(user.DisplayName, user.GitHubLogin, marker);
         var issue = await gateway.CreateIssueAsync(new NewIssueRequest(title, body, category), reporter, ct);
@@ -71,10 +73,14 @@ public static class StyloIssuesEndpoints
         IOptions<StyloIssuesOptions> opts,
         CancellationToken ct)
     {
-        if (!user.IsAuthenticated)
+        if (!user.IsAuthenticated || user.StableId is null)
             return Results.Unauthorized();
 
         var verdict = policy.Evaluate(context, user);
+        // Only FeedbackFormState.Bare (confirmed bot) is hard-blocked here with a 403.
+        // FeedbackFormState.ChallengeGated (suspicious, may be human) is intentionally NOT
+        // blocked by the core package: challenge handling is a host/bridge responsibility
+        // (e.g. redirecting to a CAPTCHA or showing challenge UI before allowing submission).
         if (verdict.State == FeedbackFormState.Bare)
             return Results.StatusCode(StatusCodes.Status403Forbidden);
 
@@ -84,9 +90,7 @@ public static class StyloIssuesEndpoints
         if (string.IsNullOrEmpty(body))
             return Results.BadRequest("body is required");
 
-        var marker = user.StableId is not null
-            ? ReporterMarker.Compute(Encoding.UTF8.GetBytes(opts.Value.MarkerKey), user.StableId)
-            : ReporterMarker.Compute(Encoding.UTF8.GetBytes(opts.Value.MarkerKey), user.DisplayName);
+        var marker = ReporterMarker.Compute(Encoding.UTF8.GetBytes(opts.Value.MarkerKey), user.StableId!);
 
         var reporter = new ReporterContext(user.DisplayName, user.GitHubLogin, marker);
         await gateway.AddCommentAsync(number, body, reporter, ct);

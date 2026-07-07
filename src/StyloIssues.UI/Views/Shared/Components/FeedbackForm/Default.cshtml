@@ -1,5 +1,6 @@
 @using StyloIssues.Abstractions
-@model FeedbackVerdictView
+@using StyloIssues.UI.Models
+@model FeedbackFormViewModel
 @{
     Layout = null;
 }
@@ -10,9 +11,9 @@
         <p>Automated activity detected. Feedback submission is not available.</p>
         @if (!string.IsNullOrEmpty(Model.BotName))
         {
-            <p class="sb-verdict-detail">Detection: @Model.BotName (@Model.BotType) &mdash; threat band: @Model.ThreatBand</p>
+            <p class="sb-verdict-detail">Detection: @Model.BotName (@Model.BotType), threat band: @Model.ThreatBand</p>
         }
-        <p><a href="#" target="_blank" rel="noopener">View issues on GitHub</a></p>
+        <p><a href="@Model.GitHubIssuesUrl" target="_blank" rel="noopener">View issues on GitHub</a></p>
     </div>
 }
 else if (Model.State == FeedbackFormState.ChallengeGated)

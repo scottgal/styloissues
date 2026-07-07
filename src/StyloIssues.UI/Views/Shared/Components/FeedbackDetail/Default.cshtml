@@ -58,9 +58,7 @@ else
         <section class="sb-add-comment">
             <h3>Add a comment</h3>
             <form method="post" action="/feedback/@Model.Number/comment"
-                  hx-post="/feedback/@Model.Number/comment"
-                  hx-target=".sb-comments"
-                  hx-swap="outerHTML">
+                  hx-post="/feedback/@Model.Number/comment">
                 <div class="sb-field">
                     <label for="sb-comment-body">Comment</label>
                     <textarea id="sb-comment-body" name="body" rows="4" required maxlength="4000"></textarea>

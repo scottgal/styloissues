@@ -28,3 +28,6 @@ appsettings.*.Local.json
 
 ## SDD scratch (briefs, reports, review packages, ledger)
 .superpowers/
+
+## Agent session dir
+.claude/

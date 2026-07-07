@@ -19,3 +19,10 @@ public enum FeedbackFormState { Full, ChallengeGated, Bare }
 public sealed record FeedbackVerdictView(
     FeedbackFormState State, string? BotName, string? BotType,
     double Probability, string ThreatBand, string? Reason);
+
+/// <summary>
+/// Diagnostic archive produced by an optional host-supplied <see cref="IIssueAttachmentSource"/>.
+/// Bytes may be null when the archive is hosted externally and only a Url is available.
+/// </summary>
+public sealed record IssueAttachment(
+    string FileName, byte[]? Bytes, string? Url, string ContentType, string? ManifestSummary);

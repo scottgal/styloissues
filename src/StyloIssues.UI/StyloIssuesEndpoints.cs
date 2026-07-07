@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using StyloIssues.Abstractions;
 using StyloIssues.Webhook;
+using StyloIssues;
 
 namespace StyloIssues.UI;
 
@@ -26,6 +27,8 @@ public static class StyloIssuesEndpoints
         IFeedbackFormPolicy policy,
         IIssueGateway gateway,
         IOptions<StyloIssuesOptions> opts,
+        IIssueAttachmentSource attachments,
+        TimeProvider timeProvider,
         CancellationToken ct)
     {
         if (!user.IsAuthenticated || user.StableId is null)
@@ -45,14 +48,25 @@ public static class StyloIssuesEndpoints
         var title = form["title"].ToString().Trim();
         var body = form["body"].ToString().Trim();
         var category = form["category"].ToString().Trim();
+        var attach = form["attach"].ToString();
 
         if (string.IsNullOrEmpty(title))
             return Results.BadRequest("title is required");
 
+        var reqBody = body;
+        if (attach == "on")
+        {
+            var now = timeProvider.GetUtcNow();
+            var fingerprint = context.Request.Headers["X-SB-Fingerprint"].FirstOrDefault();
+            var att = await attachments.CaptureAsync(fingerprint, now.AddHours(-1), now, ct);
+            if (att is not null)
+                reqBody = AttachmentBody.Append(reqBody, att);
+        }
+
         var marker = ReporterMarker.Compute(Encoding.UTF8.GetBytes(opts.Value.MarkerKey), user.StableId!);
 
         var reporter = new ReporterContext(user.DisplayName, user.GitHubLogin, marker);
-        var issue = await gateway.CreateIssueAsync(new NewIssueRequest(title, body, category), reporter, ct);
+        var issue = await gateway.CreateIssueAsync(new NewIssueRequest(title, reqBody, category), reporter, ct);
 
         // HTMX clients receive HX-Redirect; standard clients get 302.
         if (context.Request.Headers.ContainsKey("HX-Request"))

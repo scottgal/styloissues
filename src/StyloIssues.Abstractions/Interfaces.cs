@@ -30,3 +30,14 @@ public interface IIssueStore
     Task UpsertAsync(IssueDetail issue, string? reporterMarker, CancellationToken ct);
     Task<IReadOnlyList<IssueSummary>> ListByReporterAsync(string marker, CancellationToken ct);
 }
+
+/// <summary>
+/// Optional host hook to attach a diagnostic archive (e.g. StyloDump) to a new issue.
+/// StyloIssues passes primitive scope params and stays unaware of how the archive is
+/// produced or hosted. Default binding returns null (no attachment).
+/// </summary>
+public interface IIssueAttachmentSource
+{
+    Task<IssueAttachment?> CaptureAsync(
+        string? fingerprint, DateTimeOffset from, DateTimeOffset to, CancellationToken ct);
+}

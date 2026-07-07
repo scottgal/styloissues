@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using StyloIssues.Abstractions;
 
 namespace StyloIssues.UI;
 
@@ -14,6 +16,12 @@ public static class StyloIssuesUiServiceExtensions
         services.AddHttpContextAccessor();
         services.AddControllersWithViews()
             .AddApplicationPart(typeof(StyloIssuesUiMarker).Assembly);
+
+        // Ensure endpoint dependencies are resolvable even when AddStyloIssues is not called.
+        // Hosts that call AddStyloIssues already have these; TryAdd is a no-op in that case.
+        services.TryAddSingleton(TimeProvider.System);
+        services.TryAddSingleton<IIssueAttachmentSource, StyloIssues.NullIssueAttachmentSource>();
+
         return services;
     }
 }

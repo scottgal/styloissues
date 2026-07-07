@@ -36,6 +36,7 @@ public static class StyloIssuesServiceCollectionExtensions
 
         services.TryAddSingleton<IFeedbackFormPolicy, DefaultFeedbackFormPolicy>();
         services.TryAddSingleton<IIssueStore, NullIssueStore>();
+        services.TryAddSingleton<IIssueAttachmentSource, NullIssueAttachmentSource>();
 
         return services;
     }

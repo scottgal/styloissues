@@ -14,4 +14,5 @@ public sealed class StyloIssuesOptions
     public TimeSpan CacheTtl { get; set; } = TimeSpan.FromMinutes(2);
     public bool EnablePublicList { get; set; } = true;
     public Dictionary<string, string> CategoryLabels { get; set; } = new();
+    public TimeSpan ReconcileInterval { get; set; } = TimeSpan.FromMinutes(10);
 }

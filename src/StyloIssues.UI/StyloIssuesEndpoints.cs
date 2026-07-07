@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -15,20 +16,17 @@ public static class StyloIssuesEndpoints
 {
     public static IEndpointRouteBuilder MapStyloIssues(this IEndpointRouteBuilder app)
     {
-        // SECURITY: Antiforgery is disabled on these two write endpoints because the forms use HTMX
-        // (which submits via XHR and is not subject to classic CSRF in the same-origin sense), and
-        // the package does not assume the host has antiforgery middleware configured. Hosts that want
-        // full antiforgery protection should call services.AddAntiforgery(), inject the token into the
-        // forms (see FeedbackForm/Default.cshtml and FeedbackDetail/Default.cshtml), remove these
-        // .DisableAntiforgery() calls, and re-validate in the handlers.
-        app.MapPost("/feedback/new", HandleNewIssueAsync).DisableAntiforgery();
-        app.MapPost("/feedback/{number:int}/comment", HandleAddCommentAsync).DisableAntiforgery();
+        // Antiforgery is enforced in-handler (after auth and Bare gate) for the two form write endpoints.
+        app.MapPost("/feedback/new", HandleNewIssueAsync);
+        app.MapPost("/feedback/{number:int}/comment", HandleAddCommentAsync);
+        // Webhook is GitHub server-to-server (HMAC-signed); antiforgery does not apply.
         app.MapPost("/feedback/webhook", HandleWebhookAsync).DisableAntiforgery();
         return app;
     }
 
     private static async Task<IResult> HandleNewIssueAsync(
         HttpContext context,
+        IAntiforgery antiforgery,
         ICurrentUser user,
         IFeedbackFormPolicy policy,
         IIssueGateway gateway,
@@ -49,6 +47,16 @@ public static class StyloIssuesEndpoints
         // (e.g. redirecting to a CAPTCHA or showing challenge UI before allowing submission).
         if (verdict.State == FeedbackFormState.Bare)
             return Results.StatusCode(StatusCodes.Status403Forbidden);
+
+        // CSRF protection: validate the antiforgery token after auth and Bare gate checks.
+        try
+        {
+            await antiforgery.ValidateRequestAsync(context);
+        }
+        catch (AntiforgeryValidationException)
+        {
+            return Results.BadRequest();
+        }
 
         var form = await context.Request.ReadFormAsync(ct);
         var title = form["title"].ToString().Trim();
@@ -89,6 +97,7 @@ public static class StyloIssuesEndpoints
     private static async Task<IResult> HandleAddCommentAsync(
         HttpContext context,
         int number,
+        IAntiforgery antiforgery,
         ICurrentUser user,
         IFeedbackFormPolicy policy,
         IIssueGateway gateway,
@@ -105,6 +114,16 @@ public static class StyloIssuesEndpoints
         // (e.g. redirecting to a CAPTCHA or showing challenge UI before allowing submission).
         if (verdict.State == FeedbackFormState.Bare)
             return Results.StatusCode(StatusCodes.Status403Forbidden);
+
+        // CSRF protection: validate the antiforgery token after auth and Bare gate checks.
+        try
+        {
+            await antiforgery.ValidateRequestAsync(context);
+        }
+        catch (AntiforgeryValidationException)
+        {
+            return Results.BadRequest();
+        }
 
         var form = await context.Request.ReadFormAsync(ct);
         var body = form["body"].ToString().Trim();

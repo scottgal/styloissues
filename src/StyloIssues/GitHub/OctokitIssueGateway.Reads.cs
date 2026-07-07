@@ -35,8 +35,11 @@ public sealed partial class OctokitIssueGateway : IIssueGateway
     public async Task<IReadOnlyList<IssueSummary>> ListPublicAsync(CancellationToken ct)
     {
         var client = await ClientAsync(ct);
+        // Bounded first-page fetch: cap at 50 issues to avoid unbounded API enumeration.
+        // Hosts that need deeper pagination should implement a custom IIssueGateway.
         var all = await client.Issue.GetAllForRepository(_o.RepoOwner, _o.RepoName,
-            new RepositoryIssueRequest { State = ItemStateFilter.All });
+            new RepositoryIssueRequest { State = ItemStateFilter.All },
+            new ApiOptions { PageSize = 50, PageCount = 1, StartPage = 1 });
         return all.Select(i => (IssueSummary)Map(i, Array.Empty<Abstractions.IssueComment>())).ToList();
     }
 

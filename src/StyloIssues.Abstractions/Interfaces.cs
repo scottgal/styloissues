@@ -24,7 +24,16 @@ public interface IFeedbackFormPolicy
     FeedbackVerdictView Evaluate(HttpContext context, ICurrentUser user);
 }
 
-/// <summary>Optional host-supplied read-model. Default build binds a no-op.</summary>
+/// <summary>
+/// Optional host-supplied read-model. Default build binds a no-op (<see cref="StyloIssues.NullIssueStore"/>).
+/// <para>
+/// This interface is a forward-declared seam: it is defined here so hosts can register a
+/// custom implementation (e.g. a SQLite or PostgreSQL projection), but no production wiring
+/// in this package currently drives it. The <see cref="StyloIssues.Sync.ReconcilerService"/>
+/// calls <see cref="UpsertAsync"/> when it lands, but only if the host replaces the no-op binding.
+/// Adding a real backing store is an advanced integration step, not required for the default build.
+/// </para>
+/// </summary>
 public interface IIssueStore
 {
     Task UpsertAsync(IssueDetail issue, string? reporterMarker, CancellationToken ct);

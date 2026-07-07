@@ -25,4 +25,12 @@ public static class ReporterMarker
 
     /// <summary>The literal GitHub search fragment that matches an embedded marker.</summary>
     public static string SearchTerm(string marker) => $"{Prefix}{marker}";
+
+    /// <summary>
+    /// Strips any pre-existing reporter marker pattern from untrusted body text.
+    /// Call this on user-supplied input before <see cref="Embed"/> appends the real marker,
+    /// to defend against spoofed marker injection.
+    /// </summary>
+    public static string Sanitize(string body) =>
+        body.Replace(Prefix, string.Empty, StringComparison.Ordinal);
 }

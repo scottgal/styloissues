@@ -15,6 +15,12 @@ public static class StyloIssuesEndpoints
 {
     public static IEndpointRouteBuilder MapStyloIssues(this IEndpointRouteBuilder app)
     {
+        // SECURITY: Antiforgery is disabled on these two write endpoints because the forms use HTMX
+        // (which submits via XHR and is not subject to classic CSRF in the same-origin sense), and
+        // the package does not assume the host has antiforgery middleware configured. Hosts that want
+        // full antiforgery protection should call services.AddAntiforgery(), inject the token into the
+        // forms (see FeedbackForm/Default.cshtml and FeedbackDetail/Default.cshtml), remove these
+        // .DisableAntiforgery() calls, and re-validate in the handlers.
         app.MapPost("/feedback/new", HandleNewIssueAsync).DisableAntiforgery();
         app.MapPost("/feedback/{number:int}/comment", HandleAddCommentAsync).DisableAntiforgery();
         app.MapPost("/feedback/webhook", HandleWebhookAsync).DisableAntiforgery();
@@ -53,7 +59,9 @@ public static class StyloIssuesEndpoints
         if (string.IsNullOrEmpty(title))
             return Results.BadRequest("title is required");
 
-        var reqBody = body;
+        // Defense in depth: strip any pre-existing "sb-reporter:" pattern from user-supplied body
+        // before ReporterMarker.Embed appends the real marker, to prevent marker injection.
+        var reqBody = ReporterMarker.Sanitize(body);
         if (attach == "on")
         {
             var now = timeProvider.GetUtcNow();
@@ -132,7 +140,7 @@ public static class StyloIssuesEndpoints
             return Results.StatusCode(StatusCodes.Status401Unauthorized);
 
         var eventType = context.Request.Headers["X-GitHub-Event"].ToString();
-        var doc = JsonDocument.Parse(payload);
+        using var doc = JsonDocument.Parse(payload);
         await handler.HandleAsync(eventType, doc.RootElement);
 
         return Results.Ok();

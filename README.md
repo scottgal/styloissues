@@ -39,13 +39,25 @@ already provides via `IIssueReader`.
 
 ## Security notes
 
-**CSRF:** The `/feedback/new` and `/feedback/{n}/comment` write endpoints currently call
-`.DisableAntiforgery()` because the forms use HTMX and the package does not assume the host has
-antiforgery middleware configured. Hosts that require full antiforgery protection should:
-1. Call `services.AddAntiforgery()` in their DI setup.
-2. Inject the request-verification token into the form HTML (hidden input for standard POST,
-   `hx-headers` for HTMX requests).
-3. Remove the `.DisableAntiforgery()` calls from the endpoint registrations.
+**CSRF:** Antiforgery is enforced by the package. `AddStyloIssuesUi` registers the antiforgery
+service with `HeaderName = "RequestVerificationToken"`. The form partials render the token as a
+hidden field via `@Html.AntiForgeryToken()`. The write handlers (`/feedback/new` and
+`/feedback/{n}/comment`) call `antiforgery.ValidateRequestAsync(context)` after the auth and
+bot-gate checks. `DisableAntiforgery()` is applied only to the HMAC-signed webhook endpoint
+(`/feedback/webhook`), which receives server-to-server delivery from GitHub.
+
+Hosts using HTMX must attach the token to HTMX requests with the standard `htmx:configRequest`
+listener:
+
+```javascript
+document.body.addEventListener('htmx:configRequest', e => {
+  const t = document.querySelector('input[name="__RequestVerificationToken"]');
+  if (t) e.detail.headers['RequestVerificationToken'] = t.value;
+});
+```
+
+The sample layout (`samples/StyloIssues.Sample/Pages/Shared/_Layout.cshtml`) includes this script.
+No-JS form submissions use the hidden field directly.
 
 ## Status
 

@@ -16,6 +16,7 @@ else
         @foreach (var issue in Model)
         {
             <li class="sb-issue-item sb-issue-@issue.State.ToLower()">
+                <span class="sb-issue-number">#@issue.Number</span>
                 <a href="/feedback/@issue.Number" class="sb-issue-title">@issue.Title</a>
                 <span class="sb-issue-meta">
                     <span class="sb-issue-state">@issue.State</span>

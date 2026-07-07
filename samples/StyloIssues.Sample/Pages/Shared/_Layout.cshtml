@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>@(ViewData["Title"] ?? "StyloIssues")</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,400&family=Hanken+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body hx-boost="true">
+  <div id="htmx-indicator"></div>
+
+  <header class="site-header">
+    <div class="site-header-brand">
+      <a href="/feedback" class="site-wordmark">StyloIssues</a>
+      <span class="site-sublabel">feedback / scottgal/styloissues-demo</span>
+    </div>
+    <span class="site-user-chip">filing as Demo User</span>
+  </header>
+
+  <main class="site-main">
+    @RenderBody()
+  </main>
+
+  @Html.AntiForgeryToken()
+
+  <script src="~/_content/StyloIssues.UI/htmx.min.js"></script>
+  <script defer src="~/_content/StyloIssues.UI/alpine.min.js"></script>
+
+  <script>
+    // Attach antiforgery token to every HTMX request via the standard configRequest event.
+    // The token value is read from the hidden field rendered by @Html.AntiForgeryToken() above.
+    document.body.addEventListener('htmx:configRequest', function(e) {
+      var t = document.querySelector('input[name="__RequestVerificationToken"]');
+      if (t) e.detail.headers['RequestVerificationToken'] = t.value;
+    });
+
+    // Re-initialize Alpine for content swapped in by HTMX (hx-boost, hx-swap, etc.).
+    document.body.addEventListener('htmx:afterSettle', function(e) {
+      if (window.Alpine && e.detail.elt) window.Alpine.initTree(e.detail.elt);
+    });
+  </script>
+</body>
+</html>

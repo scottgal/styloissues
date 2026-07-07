@@ -1,0 +1,495 @@
+/* === Design tokens === */
+:root {
+  --paper: #f6f2e9;
+  --panel: #efe9dc;
+  --ink: #211d18;
+  --ink-soft: #6b6156;
+  --line: #ddd4c4;
+  --accent: #c2412d;
+  --accent-ink: #fbf6ee;
+  --open: #2f7d4f;
+  --open-bg: #e3efe4;
+  --closed: #7c5cbf;
+  --closed-bg: #ebe4f6;
+}
+
+/* === Reset + base === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: "Hanken Grotesk", system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--ink);
+  background-color: var(--paper);
+  min-height: 100vh;
+}
+
+/* Engineer grid overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image:
+    repeating-linear-gradient(0deg, var(--line) 0, var(--line) 1px, transparent 1px, transparent 28px),
+    repeating-linear-gradient(90deg, var(--line) 0, var(--line) 1px, transparent 1px, transparent 28px);
+}
+
+/* SVG noise grain overlay */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* View transitions */
+@view-transition { navigation: auto; }
+
+/* === Typography === */
+h1, h2, h3, h4 {
+  font-family: "Fraunces", Georgia, serif;
+  font-optical-sizing: auto;
+  line-height: 1.2;
+}
+
+h1 { font-size: 2rem; font-weight: 900; }
+h2 { font-size: 1.5rem; font-weight: 600; }
+h3 { font-size: 1.15rem; font-weight: 600; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* === HTMX progress bar === */
+#htmx-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background: var(--accent);
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.2s, width 0.4s ease;
+}
+.htmx-request #htmx-indicator {
+  opacity: 1;
+  width: 70%;
+}
+.htmx-request.htmx-settling #htmx-indicator {
+  width: 100%;
+  opacity: 0;
+}
+
+/* === Sticky header === */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 2px 0 0 var(--accent);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.site-header-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.site-wordmark {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 900;
+  font-size: 1.35rem;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.site-wordmark:hover { text-decoration: none; color: var(--accent); }
+
+.site-sublabel {
+  font-family: "Space Mono", monospace;
+  font-size: 0.65rem;
+  color: var(--ink-soft);
+  letter-spacing: 0.02em;
+  margin-top: 0.15rem;
+}
+
+.site-user-chip {
+  font-family: "Space Mono", monospace;
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 0.25rem 0.6rem;
+  white-space: nowrap;
+  background: var(--panel);
+}
+
+/* === Main content column === */
+.site-main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+/* === Page sections === */
+.section-heading {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.content-section { margin-bottom: 3rem; }
+
+/* === Form panel === */
+.sb-feedback-form,
+.form-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1.75rem;
+}
+
+/* === Fields === */
+.sb-field {
+  margin-bottom: 1.25rem;
+}
+
+.sb-field label {
+  display: block;
+  font-family: "Space Mono", monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  margin-bottom: 0.4rem;
+}
+
+.sb-field input[type="text"],
+.sb-field input[type="email"],
+.sb-field textarea,
+.sb-field select {
+  display: block;
+  width: 100%;
+  font-family: "Hanken Grotesk", system-ui, sans-serif;
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 0.6rem 0.75rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+  appearance: none;
+}
+
+.sb-field input:focus,
+.sb-field textarea:focus,
+.sb-field select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.sb-field textarea { resize: vertical; min-height: 8rem; }
+
+/* === Actions + buttons === */
+.sb-actions { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.5rem; }
+
+.sb-actions button {
+  font-family: "Space Mono", monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border: none;
+  border-radius: 3px;
+  padding: 0.55rem 1.2rem;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.sb-actions button:hover {
+  background: color-mix(in srgb, var(--accent) 85%, var(--ink));
+  transform: translateY(-1px);
+}
+.sb-actions button:active { transform: translateY(0); }
+.sb-actions button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* === Issue list === */
+.sb-issue-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.sb-issue-item {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 3px solid transparent;
+  border-radius: 4px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  transition: border-left-color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+
+.sb-issue-item:hover {
+  border-left-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--ink) 8%, transparent);
+}
+
+.sb-issue-number {
+  font-family: "Space Mono", monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.sb-issue-title {
+  font-family: "Hanken Grotesk", system-ui, sans-serif;
+  font-weight: 500;
+  color: var(--ink);
+  flex: 1;
+}
+
+.sb-issue-title:hover { text-decoration: underline; }
+
+.sb-issue-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.sb-issue-state {
+  font-family: "Space Mono", monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+}
+
+/* State pill coloring: the li carries .sb-issue-open or .sb-issue-closed */
+.sb-issue-item.sb-issue-open .sb-issue-state {
+  color: var(--open);
+  background: var(--open-bg);
+}
+
+.sb-issue-item.sb-issue-closed .sb-issue-state {
+  color: var(--closed);
+  background: var(--closed-bg);
+}
+
+.sb-issue-date {
+  font-family: "Space Mono", monospace;
+  font-size: 0.65rem;
+  color: var(--ink-soft);
+}
+
+/* === Issue detail === */
+.sb-issue-detail { max-width: 720px; }
+
+.sb-issue-header {
+  margin-bottom: 1.75rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.sb-issue-header .sb-issue-number {
+  font-family: "Space Mono", monospace;
+  font-size: 1rem;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.sb-issue-header h2 {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 600;
+  font-size: 1.65rem;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
+}
+
+.sb-issue-header .sb-issue-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-left: 0;
+  justify-content: flex-start;
+}
+
+.sb-issue-body {
+  font-family: "Hanken Grotesk", system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--ink);
+  margin-bottom: 2rem;
+}
+
+.sb-github-link {
+  font-family: "Space Mono", monospace;
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+}
+
+.sb-github-link:hover { color: var(--accent); }
+
+/* === Comments === */
+.sb-comments {
+  margin-bottom: 2rem;
+}
+
+.sb-comments h3 { margin-bottom: 1rem; }
+
+.sb-comment {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.sb-comment.sb-comment-bot { border-left: 3px solid var(--accent); }
+
+.sb-comment-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.sb-comment-author {
+  font-family: "Space Mono", monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.sb-comment-badge {
+  font-family: "Space Mono", monospace;
+  font-size: 0.65rem;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+}
+
+.sb-comment-date {
+  font-family: "Space Mono", monospace;
+  font-size: 0.65rem;
+  color: var(--ink-soft);
+  margin-left: auto;
+}
+
+.sb-comment-body {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--ink);
+}
+
+/* === Add comment form === */
+.sb-add-comment {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1.25rem 1.25rem 1rem;
+}
+
+.sb-add-comment h3 { margin-bottom: 1rem; font-size: 1rem; }
+
+/* === Empty / not-found states === */
+.sb-empty,
+.sb-not-found {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--ink-soft);
+  font-family: "Hanken Grotesk", system-ui, sans-serif;
+}
+
+.sb-empty p::after {
+  content: " File the first one.";
+}
+
+.sb-not-found p { font-size: 1rem; }
+
+/* === Bot / challenge verdicts === */
+.sb-verdict {
+  background: color-mix(in srgb, var(--accent) 8%, var(--paper));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+  border-radius: 4px;
+  padding: 1rem 1.25rem;
+}
+
+.sb-verdict-detail { font-size: 0.85rem; color: var(--ink-soft); }
+
+.sb-challenge {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1rem 1.25rem;
+}
+
+/* === Back link === */
+.back-link {
+  display: inline-block;
+  font-family: "Space Mono", monospace;
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  margin-bottom: 1.5rem;
+}
+
+.back-link:hover { color: var(--accent); text-decoration: none; }
+
+/* === Page-load staggered reveal === */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.site-header    { animation: fade-up 0.3s ease both; animation-delay: 0ms; }
+.sb-feedback-form { animation: fade-up 0.35s ease both; animation-delay: 80ms; }
+.content-section:first-child { animation: fade-up 0.35s ease both; animation-delay: 60ms; }
+.content-section:nth-child(2) { animation: fade-up 0.35s ease both; animation-delay: 130ms; }
+.sb-issue-item:nth-child(1)  { animation: fade-up 0.3s ease both; animation-delay: 160ms; }
+.sb-issue-item:nth-child(2)  { animation: fade-up 0.3s ease both; animation-delay: 190ms; }
+.sb-issue-item:nth-child(3)  { animation: fade-up 0.3s ease both; animation-delay: 220ms; }
+.sb-issue-item:nth-child(4)  { animation: fade-up 0.3s ease both; animation-delay: 250ms; }
+.sb-issue-item:nth-child(n+5){ animation: fade-up 0.3s ease both; animation-delay: 280ms; }
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

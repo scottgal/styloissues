@@ -1,6 +1,4 @@
 @using StyloIssues.Abstractions
-@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Af
-@inject Microsoft.AspNetCore.Http.IHttpContextAccessor Hca
 @model IssueDetail?
 @{
     Layout = null;
@@ -14,9 +12,9 @@
 }
 else
 {
-    var tok = Af.GetAndStoreTokens(Hca.HttpContext!).RequestToken;
     <article class="sb-issue-detail">
         <header class="sb-issue-header">
+            <span class="sb-issue-number">#@Model.Number</span>
             <h2>@Model.Title</h2>
             <div class="sb-issue-meta">
                 <span class="sb-issue-state sb-issue-@Model.State.ToLower()">@Model.State</span>
@@ -61,8 +59,7 @@ else
         <section class="sb-add-comment">
             <h3>Add a comment</h3>
             <form method="post" action="/feedback/@Model.Number/comment"
-                  hx-post="/feedback/@Model.Number/comment"
-                  hx-headers='{"RequestVerificationToken": "@tok"}'>
+                  hx-post="/feedback/@Model.Number/comment">
                 @Html.AntiForgeryToken()
                 <div class="sb-field">
                     <label for="sb-comment-body">Comment</label>

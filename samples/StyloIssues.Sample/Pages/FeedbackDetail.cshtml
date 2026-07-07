@@ -1,20 +1,9 @@
 @page "/feedback/{number:int}"
 @{
-    Layout = null;
     var number = Convert.ToInt32(RouteData.Values["number"]);
+    ViewData["Title"] = "Feedback #" + number;
 }
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Feedback #@number</title>
-</head>
-<body>
-    <main>
-        <h1>Feedback</h1>
-        <nav><a href="/feedback">Back to all issues</a></nav>
-        <sb-feedback-detail number="@number" />
-    </main>
-</body>
-</html>
+
+<a href="/feedback" class="back-link">back to all reports</a>
+
+<sb-feedback-detail number="@number" />

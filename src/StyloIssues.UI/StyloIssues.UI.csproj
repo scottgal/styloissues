@@ -4,7 +4,7 @@
     <AssemblyName>StyloIssues.UI</AssemblyName>
     <RootNamespace>StyloIssues.UI</RootNamespace>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
